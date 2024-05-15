@@ -1,0 +1,9 @@
+from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_community.utilities.tavily_search import TavilySearchAPIWrapper
+from langchain_community.tools.openweathermap import OpenWeatherMapQueryRun
+from langchain_community.utilities import OpenWeatherMapAPIWrapper
+
+import config
+
+search = TavilySearchResults(api_wrapper=TavilySearchAPIWrapper(tavily_api_key=config.TAVILY_KEY))
+weather = OpenWeatherMapQueryRun(api_wrapper=OpenWeatherMapAPIWrapper(openweathermap_api_key=config.OPENWEATHERMAP_KEY))

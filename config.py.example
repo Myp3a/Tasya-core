@@ -1,0 +1,15 @@
+OLLAMA_HOST="localhost"
+OLLAMA_PORT=11434
+DEEPL_KEY="deepl_key_here"
+TAVILY_KEY="tavily_key_here"
+SPEECHKIT_KEY="yandex_speechkit_key_here"
+OPENWEATHERMAP_KEY="openweathermap_key_here"
+
+XTTS_API_SERVER_HOST="localhost"
+XTTS_API_SERVER_PORT=8020
+
+VOICE_PLAYER_HOST="localhost"
+VOICE_PLAYER_PORT=8080
+
+DEBUG=True
+TRANSLATE=None
