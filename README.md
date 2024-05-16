@@ -4,7 +4,6 @@ The heart of Tasya, my (voice) assistant - or at least, a wrapper for it.
  - [Features](#features)
  - [Requirements](#requirements)
  - [How to use](#how-to-use)
- - [Features](#features)
  - [Helper scripts](#helper-scripts)
 
 # Features
