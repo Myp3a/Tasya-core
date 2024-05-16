@@ -5,6 +5,7 @@ The heart of Tasya, my (voice) assistant - or at least, a wrapper for it.
  - [Requirements](#requirements)
  - [How to use](#how-to-use)
  - [Helper scripts](#helper-scripts)
+ - [TODO](#todo)
 
 # Features
  - LLM RAG-backed responses
@@ -74,3 +75,10 @@ Generates a voice response based on text input. Input should be a `multipart/for
 Trimmed down whisper.cpp client for voice_input endpoint. Should be compiled with [whisper.cpp](https://github.com/ggerganov/whisper.cpp) headers.
 ### player.py
 Simple WAV audio player over network. Should be used with `VOICE_PLAYER_HOST` config variable.
+
+# TODO
+ - Try LLaMA 70b. Should make possible usage of OllamaFunctions LangChain wrapper. Also should resolve problems with "output only ...".
+ - Try LangGraph. Currently isn't possible because no functions wrapper exists.
+ - Add more agents for different tasks.
+ - Tune models for real-time voice conversation.
+ - Tune prompts (might be unnecessary with 70b model).
