@@ -1,5 +1,4 @@
 import aiohttp
-import json
 import os
 from aiohttp import web
 
@@ -23,6 +22,20 @@ used_agents_list: list[agents.Agent] = [
     agents.ChatterAgent(llm),
 ]
 
+def generate(history) -> str:
+    supervisor = agents.SupervisorAgent(llm, used_agents_list)
+    chosen_worker = supervisor.ask(history)
+    match chosen_worker:
+        case "meteorologist":
+            resp = agents.WeatherAgent(llm).ask(history)
+        case "researcher":
+            resp = agents.SearchAgent(llm).ask(history)
+        case "chatter":
+            resp = agents.ChatterAgent(llm).ask(history)
+        case _:
+            resp = "I couldn't understand you. Please, try again."
+    return resp
+
 @routes.post("/text_input")
 async def text_input(req: web.Request):
     data = await req.json()
@@ -44,17 +57,7 @@ async def text_input(req: web.Request):
             query = translate(query, translate_to, "en")
         history.add_user_message(query)
     
-    supervisor = agents.SupervisorAgent(llm, used_agents_list)
-    chosen_worker = supervisor.ask(history)
-    match chosen_worker:
-        case "meteorologist":
-            resp = agents.WeatherAgent(llm).ask(history)
-        case "researcher":
-            resp = agents.SearchAgent(llm).ask(history)
-        case "chatter":
-            resp = agents.ChatterAgent(llm).ask(history)
-        case _:
-            resp = "I couldn't understand you. Please, try again."
+    resp = generate(history)
     
     if history:
         history.add_ai_message(resp)
@@ -66,29 +69,71 @@ async def text_input(req: web.Request):
 async def voice_input(req):
     async with aiohttp.ClientSession() as sess:
         data = await req.post()
-        found_text = json.loads(data["text"])["text"]
-        found_text = found_text.split("Тася")[-1]
+        if not (audio := data.get("file", None)):
+            return web.json_response({"error": "file is required"}, status=400)
+        session_id = data.get("session_id", None)
+        history = data.get("history", None)
+        translate_to = data.get("translate", config.TRANSLATE)
+        return_file = data.get("return_file", False)
+
+        if not history:
+            if session_id:
+                history = get_history(session_id)
+            else:
+                history = MessagesWrapper([])
+        else:
+            history = MessagesWrapper(history.split("\n"))
+    
+        async with sess.post(
+            f"http://{config.WHISPER_HOST}:{config.WHISPER_PORT}/inference",
+            data={"file": audio}
+        ) as resp:
+            found_text = (await resp.json()).get("text", None)
+        if not found_text:
+            return web.json_response({"error": "spoken text wasn't found"}, status=400)
+        
+        found_text = found_text.split(config.ASSISTANT_NAME)[-1]
         if found_text.startswith(", "):
             found_text = found_text.replace(", ", "", 1)
-        audio_data = data["file"]
+
+        if translate_to:
+            found_text = translate(found_text, translate_to, "en")
+        history.add_user_message(found_text)
+
         if not os.path.isdir("tmp"):
             os.mkdir("tmp")
         with open("tmp/input.wav", "wb") as outf:
-            outf.write(audio_data)
-        generated_text = await generate_text_with_history(found_text, 0)
+            outf.write(audio)
         whisper = await is_whisper("tmp/input.wav")
+        
+        resp = generate(history)
+
+        if translate_to:
+            resp = await translate(resp, "en", translate_to)
+
         if whisper:
-            await get_whisper_audio(generated_text)
+            await get_whisper_audio(resp)
         else:
-            async with sess.post(f"http://{config.XTTS_API_SERVER_HOST}:{config.XTTS_API_SERVER_PORT}/tts_to_audio/",
-                                 json={"text": generated_text, "speaker_wav": "kelex", "language": "ru"}
+            async with sess.post(
+                f"http://{config.XTTS_API_SERVER_HOST}:{config.XTTS_API_SERVER_PORT}/tts_to_audio/",
+                json={
+                    "text": resp,
+                    "speaker_wav": config.ASSISTANT_VOICE_SAMPLE,
+                    "language": config.TRANSLATE if config.TRANSLATE else "en"
+                }
             ) as resp:
                 with open('tmp/output.wav', "wb") as outf:
                     outf.write(await resp.read())
-        async with sess.post(f"http://{config.VOICE_PLAYER_HOST}:{config.VOICE_PLAYER_PORT}/voice_play",
-                             data={"file": open('tmp/output.wav', 'rb')}
-        ) as req:
-            pass
+        with open('tmp/output.wav', "rb") as inf:
+            if return_file:
+                return web.Response(body=inf.read())
+            else:
+                async with sess.post(
+                    f"http://{config.VOICE_PLAYER_HOST}:{config.VOICE_PLAYER_PORT}/voice_play",
+                    data={"file": inf.read()}
+                ) as req:
+                    pass
+    return web.HTTPOk()
 
 app = web.Application()
 app.add_routes(routes)

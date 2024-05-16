@@ -8,6 +8,12 @@ class MessagesWrapper():
     # Designed to workaround the issue that HumanMessage/AIMessage injected directly into prompt
     def __init__(self, messages_text) -> None:
         self.messages = messages_text
+    
+    def add_user_message(self, message) -> None:
+        self.messages.append(f"{ROLE_START}{USER_NAME}{ROLE_END}{message}{END_OF_TURN}")
+
+    def add_ai_message(self, message) -> None:
+        self.messages.append(f"{ROLE_START}{AI_NAME}{ROLE_END}{message}{END_OF_TURN}")
 
 def get_history(session_id):
     return SQLChatMessageHistory(session_id=session_id, connection_string="sqlite:///messages.db")
