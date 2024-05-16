@@ -1,0 +1,6 @@
+beautifulsoup4
+chromadb
+deep-translator
+langchain
+pyowm
+yandex-speechkit
