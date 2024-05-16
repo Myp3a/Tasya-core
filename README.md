@@ -5,6 +5,7 @@ The heart of Tasya, my (voice) assistant - or at least, a wrapper for it.
  - [Requirements](#requirements)
  - [How to use](#how-to-use)
  - [Features](#features)
+ - [Helper scripts](#helper-scripts)
 
 # Features
  - LLM RAG-backed responses
@@ -58,8 +59,6 @@ POST /voice_input
 ```
 Generates a voice response based on text input. Input should be a `multipart/form-data`!
 ### Required parameters
-At least one is required. If both are specified, query will be appended to the history.
-
 **file**: `application/octet-stream` - WAV-encoded voice input  
 ### Additional parameters
 **history**: `list[str]` - chat history for generation
@@ -70,3 +69,9 @@ At least one is required. If both are specified, query will be appended to the h
 > Internally model and history are used with english language. This allows interactions with AI in other languages, with a bit of quality loss  
 
 **return_file**: `bool` - whether to return the resulting audio file or play it directly on voice_player instance
+
+# Helper scripts
+### command.cpp
+Trimmed down whisper.cpp client for voice_input endpoint. Should be compiled with [whisper.cpp](https://github.com/ggerganov/whisper.cpp) headers.
+### player.py
+Simple WAV audio player over network. Should be used with `VOICE_PLAYER_HOST` config variable.
