@@ -46,7 +46,7 @@ Generates a text response based on text input. Input should be formatted as JSON
 At least one is required. If both are specified, query will be appended to the history.
 
 **query**: `str` - user question for the AI  
-**history**: `list[str]` - chat history for generation
+**history**: `str` - chat history for generation. Provided as text block, where speakers are separated by newlines.
 > History is prepended as-is, so it should be formatted like `<|start_header_id|>assistant<|end_header_id|>AI message...<|eot_id|>` (LLaMA 3 format)
 ### Additional parameters
 **session_id**: `str` - persistent key to save chat history on the server  
@@ -61,7 +61,7 @@ Generates a voice response based on text input. Input should be a `multipart/for
 ### Required parameters
 **file**: `application/octet-stream` - WAV-encoded voice input  
 ### Additional parameters
-**history**: `list[str]` - chat history for generation
+**history**: `str` - chat history for generation. Provided as text block, where speakers are separated by newlines.
 > History is prepended as-is, so it should be formatted like `<|start_header_id|>assistant<|end_header_id|>AI message...<|eot_id|>` (LLaMA 3 format)
 
 **session_id**: `str` - persistent key to save chat history on the server  
