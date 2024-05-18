@@ -9,7 +9,7 @@ from llm import llm
 import agents
 import config
 from ya_integration import is_whisper, get_whisper_audio
-from translator import translate
+from translator import translate, translate_tasya
 
 if config.DEBUG:
     set_debug(True)
@@ -46,15 +46,18 @@ async def text_input(req: web.Request):
     if not query and not history:
         return web.json_response({"error": "query or history is required"}, status=400)
     if not history:
+        # Internal history isn't translated
         if session_id:
             history = get_history(session_id)
         else:
             history = MessagesWrapper([])
     else:
+        if translate_to:
+            history = await translate(history, translate_to, "en")
         history = MessagesWrapper(history.split("\n"))
     if query:
         if translate_to:
-            query = translate(query, translate_to, "en")
+            query = await translate(query, translate_to, "en")
         history.add_user_message(query)
     
     resp = generate(history)
@@ -62,7 +65,7 @@ async def text_input(req: web.Request):
     if history:
         history.add_ai_message(resp)
     if translate_to:
-        resp = await translate(resp, "en", translate_to)
+        resp = await translate_tasya(resp, "en", translate_to)
     return web.json_response({"text": resp})
 
 @routes.post("/voice_input")
@@ -97,7 +100,7 @@ async def voice_input(req):
             found_text = found_text.replace(", ", "", 1)
 
         if translate_to:
-            found_text = translate(found_text, translate_to, "en")
+            found_text = await translate(found_text, translate_to, "en")
         history.add_user_message(found_text)
 
         if not os.path.isdir("tmp"):
@@ -109,7 +112,7 @@ async def voice_input(req):
         resp = generate(history)
 
         if translate_to:
-            resp = await translate(resp, "en", translate_to)
+            resp = await translate_tasya(resp, "en", translate_to)
 
         if whisper:
             await get_whisper_audio(resp)
