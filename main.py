@@ -122,7 +122,7 @@ async def voice_input(req):
                 json={
                     "text": resp,
                     "speaker_wav": config.ASSISTANT_VOICE_SAMPLE,
-                    "language": config.TRANSLATE if config.TRANSLATE else "en"
+                    "language": translate_to if translate_to else "en"
                 }
             ) as resp:
                 with open('tmp/output.wav', "wb") as outf:
