@@ -82,3 +82,4 @@ Simple WAV audio player over network. Should be used with `VOICE_PLAYER_HOST` co
  - Add more agents for different tasks.
  - Tune models for real-time voice conversation.
  - Tune prompts (might be unnecessary with 70b model).
+ - Find a way to run xtts-api-server with DeepSpeed on ROCm / cool Nvidia card to enable voice streaming generation.
