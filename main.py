@@ -4,7 +4,7 @@ from aiohttp import web
 
 from langchain.globals import set_debug
 
-from history import get_history, MessagesWrapper
+from history import get_history, trim_if_long, MessagesWrapper
 from llm import llm
 import agents
 import config
@@ -45,10 +45,12 @@ async def text_input(req: web.Request):
     translate_to = data.get("translate", config.TRANSLATE)
     if not query and not history:
         return web.json_response({"error": "query or history is required"}, status=400)
+    orig_history = None
     if not history:
         # Internal history isn't translated
-        if session_id:
+        if session_id is not None:
             history = get_history(session_id)
+            orig_history = history
         else:
             history = MessagesWrapper([])
     else:
@@ -60,10 +62,12 @@ async def text_input(req: web.Request):
             query = await translate(query, translate_to, "en")
         history.add_user_message(query)
     
+    history = trim_if_long(history)
     resp = generate(history)
     
-    if history:
-        history.add_ai_message(resp)
+    if orig_history:
+        # Don't care about passed or empty history, but add to server-side original object
+        orig_history.add_ai_message(resp)
     if translate_to:
         resp = await translate_tasya(resp, "en", translate_to)
     return web.json_response({"text": resp})

@@ -36,6 +36,8 @@ AGENT_PROMPT_TEMPLATE = PromptTemplate.from_template(f"""{START_TOKEN}{ROLE_STAR
 {START_TOKEN}{ROLE_START}{AI_NAME}{ROLE_END}: 
 """)
 
+SUMMARIZE_PROMPT = AGENT_PROMPT_TEMPLATE.partial(system_prompt="Summarize the conversation between user and AI. Include as many specific details as you can.")
+
 WEATHER_GET_CITY_PROMPT = AGENT_PROMPT_TEMPLATE.partial(system_prompt="""You are a weather assistant. Get the requested city from the messages below. Reply only with a city name.""")
 
 WEATHER_AGENT_PROMPT = AGENT_PROMPT_TASYA_TEMPLATE.partial(system_prompt="""You are a weather assistant. Give the user information about the weather in specific place. Be short. Reply with metric system and celsius degrees.
@@ -46,7 +48,7 @@ SEARCH_GET_QUERY_PROMPT = AGENT_PROMPT_TEMPLATE.partial(system_prompt="You can s
 CHATTER_AGENT_PROMPT = AGENT_PROMPT_TASYA_TEMPLATE.partial(system_prompt="")
 
 SUPERVISOR_PROMPT = PromptTemplate.from_template(f"""{START_TOKEN}{ROLE_START}{SYSTEM_NAME}{ROLE_END}
-You are a supervisor tasked with managing a conversation between the following workers: {{agents}}. Given the following user request, respond with the worker to act next. Each worker will perform a task and respond with their results and status. When finished, respond with Finish.
+You are a supervisor tasked with managing a conversation between the following workers: {{agents}}. Given the following user request, respond with the worker to act next. Each worker will perform a task and respond with their results and status.
 
 Available workers:
 
