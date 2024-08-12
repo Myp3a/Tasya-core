@@ -57,6 +57,8 @@ Meteorologist: provides accurate information about current weather.
 Researcher: can answer complex questions.
 
 Chatter: just likes to chat and roleplay. Select this one if the request doesn't fall into other categories.
+
+Answer with ONLY ONE WORD.
 {END_OF_TURN}
 {{chat_history}}
 {START_TOKEN}{ROLE_START}{SYSTEM_NAME}{ROLE_END}
