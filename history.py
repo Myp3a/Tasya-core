@@ -2,7 +2,7 @@ from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.messages import AIMessage, HumanMessage
 
-from llm import llm
+from llm import llama31
 from prompts import ROLE_START, ROLE_END, AI_NAME, USER_NAME, END_OF_TURN, SUMMARIZE_PROMPT
 
 AI_HEADER = f"{ROLE_START}{AI_NAME}{ROLE_END}"
@@ -56,7 +56,7 @@ def trim_if_long(history_obj: BaseChatMessageHistory | MessagesWrapper):
     keep = history_obj.messages[-5:]
     summarize = history_obj.messages[:-5]
     summarization_history = MessagesWrapper(summarize)
-    summarize_chain = SUMMARIZE_PROMPT | llm
+    summarize_chain = SUMMARIZE_PROMPT | llama31
     history_summarized = summarize_chain.invoke({"chat_history": as_text_block(summarization_history)})
     history_obj.clear()
     history_obj.add_ai_message(history_summarized)

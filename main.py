@@ -5,7 +5,7 @@ from aiohttp import web
 from langchain.globals import set_debug
 
 from history import get_history, trim_if_long, MessagesWrapper
-from llm import llm
+from llm import fimbulvetr, llama31
 import agents
 import config
 from ya_integration import is_whisper, get_whisper_audio
@@ -17,21 +17,21 @@ if config.DEBUG:
 routes = web.RouteTableDef()
 
 used_agents_list: list[agents.Agent] = [
-    agents.WeatherAgent(llm),
-    agents.SearchAgent(llm),
-    agents.ChatterAgent(llm),
+    agents.WeatherAgent(llama31),
+    agents.SearchAgent(llama31),
+    agents.ChatterAgent(fimbulvetr),
 ]
 
 def generate(history) -> str:
-    supervisor = agents.SupervisorAgent(llm, used_agents_list)
+    supervisor = agents.SupervisorAgent(llama31, used_agents_list)
     chosen_worker = supervisor.ask(history)
     match chosen_worker:
         case "meteorologist":
-            resp = agents.WeatherAgent(llm).ask(history)
+            resp = agents.WeatherAgent(llama31).ask(history)
         case "researcher":
-            resp = agents.SearchAgent(llm).ask(history)
+            resp = agents.SearchAgent(llama31).ask(history)
         case "chatter":
-            resp = agents.ChatterAgent(llm).ask(history)
+            resp = agents.ChatterAgent(fimbulvetr).ask(history)
         case _:
             resp = "I couldn't understand you. Please, try again."
     return resp
