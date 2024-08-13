@@ -25,7 +25,7 @@ class SupervisorAgent(Agent):
         supervisor_prompt = prompts.SUPERVISOR_PROMPT.partial(agents=self.agents)
         supervisor_chain = supervisor_prompt | self.llm
         chosen_worker = supervisor_chain.invoke({"chat_history": as_text_block(history)})
-        found_count = sum([name in chosen_worker for name in self.agents])
+        found_count = sum([name in chosen_worker.lower() for name in self.agents])
         if found_count != 1:
             if retry_count > 10:
                 return "unknown"  # To prevent deadlocks
