@@ -1,3 +1,4 @@
+import pyowm
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.vectorstores.chroma import Chroma
 from langchain_community.embeddings import OllamaEmbeddings
@@ -68,7 +69,10 @@ class WeatherAgent(Agent):
     
     def ask(self, history) -> str:
         city = self.parse_city(history)
-        current_weather = self.get_weather(city)
+        try:
+            current_weather = self.get_weather(city)
+        except:
+            return "I can't determine the city from your request."
         weather_resp = self.provide_weather(history, current_weather)
         return weather_resp
 
