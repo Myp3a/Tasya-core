@@ -20,14 +20,20 @@ class SupervisorAgent(Agent):
             self.agents.append(a.name)
         self.name = "supervisor"
     
-    def ask(self, history) -> str:
+    def ask(self, history, retry_count = 0) -> str:
         supervisor_prompt = prompts.SUPERVISOR_PROMPT.partial(agents=self.agents)
         supervisor_chain = supervisor_prompt | self.llm
         chosen_worker = supervisor_chain.invoke({"chat_history": as_text_block(history)})
-        for agent_name in self.agents:
-            if agent_name in chosen_worker.lower():
-                return agent_name
-        return "unknown"
+        found_count = sum([name in chosen_worker for name in self.agents])
+        if found_count != 1:
+            if retry_count > 10:
+                return "unknown"  # To prevent deadlocks
+            retry_count += 1
+            return self.ask(history, retry_count)
+        else:
+            for agent_name in self.agents:
+                if agent_name in chosen_worker.lower():
+                    return agent_name
 
 class ContextAssistantAgent(Agent):
     def __init__(self, llm) -> None:
