@@ -1,0 +1,4 @@
+aiohttp
+deep_translator
+pydantic-settings
+ollama
