@@ -29,9 +29,10 @@ class Generator:
         log.info(f"Request {self.request_id}: generating, using {model}")
         if not tools:
             tools = []
+            log.debug(f"req {self.request_id}: available tools are {tools}")
         if schema:
             schema = schema.model_json_schema()
-        log.debug(f"req {self.request_id}: will be generated according to schema")
+            log.debug(f"req {self.request_id}: will be generated according to schema")
         for msg in conv.messages:
             log.debug(f"req {self.request_id}: msg by {msg.role:>9} - {oneliner(msg.content)}")
         resp = chat(model, messages=[m.model_dump(exclude_none=True) for m in conv.messages], stream=False, format=schema, tools=tools)
