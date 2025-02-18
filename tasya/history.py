@@ -1,9 +1,13 @@
+import logging
 import re
 from typing import Literal
 
 from pydantic import BaseModel
 
 from tasya.config import config
+
+log = logging.getLogger("tasya.history")
+
 
 class ToolCall(BaseModel):
     ...
@@ -43,26 +47,31 @@ class Message(BaseModel):
 
 
 class Conversation:
-    def __init__(self) -> None:
+    def __init__(self, request_id: str = "unknwn") -> None:
         self.messages: list[Message] = []
+        self.request_id = request_id
 
     def as_marked_block(self) -> str:
+        log.debug(f"req {self.request_id}: formatting history as solid block with tags")
         return "\n".join([m.wrap() for m in self.messages])
 
     @staticmethod
-    def from_marked_block(block: str) -> "Conversation":
+    def from_marked_block(block: str, request_id: str = "unknwn") -> "Conversation":
+        log.debug(f"req {request_id}: creating history from tagged solid text block")
         c = Conversation()
         c.messages = [Message.unwrap(m) for m in block.split("\n") if m]
         return c
 
     @staticmethod
-    def from_dict(messages: list[dict[str, str]]) -> "Conversation":
+    def from_dict(messages: list[dict[str, str]], request_id: str = "unknwn") -> "Conversation":
+        log.debug(f"req {request_id}: creating history from dictionary")
         c = Conversation()
         c.messages = [Message(role=m["role"], content=m["content"]) for m in messages]
         return c
     
     @staticmethod
-    def from_list(messages: list[Message]) -> "Conversation":
+    def from_list(messages: list[Message], request_id: str = "unknwn") -> "Conversation":
+        log.debug(f"req {request_id}: creating history from list of messages")
         c = Conversation()
         c.messages = messages
         return c
@@ -72,6 +81,7 @@ class Conversation:
         return len(self.messages)
 
     def add(self, role: Literal["assistant", "user", "system", "tool"], content: str, index: int | None = None) -> None:
+        log.debug(f"req {self.request_id}: adding a message at position {index}")
         if index:
             self.messages.insert(index, Message(role=role, content=content))
         else:
