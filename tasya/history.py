@@ -81,7 +81,7 @@ class Conversation:
         return len(self.messages)
 
     def add(self, role: Literal["assistant", "user", "system", "tool"], content: str, index: int | None = None) -> None:
-        log.debug(f"req {self.request_id}: adding a message at position {index}")
+        log.debug(f"req {self.request_id}: adding a message at position {index if index else 'last'}")
         if index:
             self.messages.insert(index, Message(role=role, content=content))
         else:
