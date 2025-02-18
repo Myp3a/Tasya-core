@@ -35,7 +35,7 @@ class Generator:
         for msg in conv.messages:
             log.debug(f"req {self.request_id}: msg by {msg.role:>9} - {oneliner(msg.content)}")
         resp = chat(model, messages=[m.model_dump(exclude_none=True) for m in conv.messages], stream=False, format=schema, tools=tools)
-        log.debug(f"req {self.request_id}: msg by assistant - {oneliner(resp)}")
+        log.debug(f"req {self.request_id}: msg by assistant - {oneliner(resp["message"]["content"])}")
         msg = Message(role="assistant", content=resp["message"]["content"], tool_calls=resp["message"].get("tool_calls", None))
         return msg
 
