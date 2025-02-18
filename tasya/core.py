@@ -24,7 +24,7 @@ class Core:
             conv = Conversation.from_marked_block(self.translator.translate(conv.as_marked_block(), self.lang, "en"), self.request_id)
         log.info(f"Request {self.request_id}: passing to generation module")
         resp = self.generator.answer(conv)
-        log.debug(f'req {self.request_id}: got reply "{oneliner(resp)}"')
+        log.debug(f'req {self.request_id}: got reply "{oneliner(resp.content)}"')
         conv.add(resp.role, resp.content)
         log.debug(f"req {self.request_id}: updated history, it has {conv.count} messages")
         if self.lang != "en":
