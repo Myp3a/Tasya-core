@@ -13,7 +13,7 @@ routes = web.RouteTableDef()
 
 @routes.post("/text")
 async def text_input(req: web.Request) -> web.Response:
-    req_id = random.choices(string.ascii_letters + string.digits, k=6)
+    req_id = "".join(random.choices(string.ascii_letters + string.digits, k=6))
     data = await req.json()
     log.info(f"Request {req_id}: received request for text generation")
     log.debug(f"req {req_id}: contents are {data}")
