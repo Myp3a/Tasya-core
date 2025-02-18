@@ -58,21 +58,21 @@ class Conversation:
     @staticmethod
     def from_marked_block(block: str, request_id: str = "unknwn") -> "Conversation":
         log.debug(f"req {request_id}: creating history from tagged solid text block")
-        c = Conversation()
+        c = Conversation(request_id)
         c.messages = [Message.unwrap(m) for m in block.split("\n") if m]
         return c
 
     @staticmethod
     def from_dict(messages: list[dict[str, str]], request_id: str = "unknwn") -> "Conversation":
         log.debug(f"req {request_id}: creating history from dictionary")
-        c = Conversation()
+        c = Conversation(request_id)
         c.messages = [Message(role=m["role"], content=m["content"]) for m in messages]
         return c
     
     @staticmethod
     def from_list(messages: list[Message], request_id: str = "unknwn") -> "Conversation":
         log.debug(f"req {request_id}: creating history from list of messages")
-        c = Conversation()
+        c = Conversation(request_id)
         c.messages = messages
         return c
     
