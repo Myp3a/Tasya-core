@@ -54,7 +54,7 @@ class Generator:
 
     def extract_query(self, conv: Conversation) -> str:
         log.info(f"Request {self.request_id}: extracting user query for search")
-        query_conv = Conversation.from_list([Message(role="system", content="You are a helpful assistant. Your task is to extract the user's request about searching for information. Find the user's latest request and output only the search term. Respond with JSON.")] + conv.messages, self.request_id)
+        query_conv = Conversation.from_list([Message(role="system", content="You are a helpful assistant. Your task is to extract the user's request about searching for information. Find the user's latest request and output only the search term. You can use previous messages as a context to refine the query, as the user's question may be a follow-up. However, if the context seems unrelated, prefer the latest message. Respond with JSON.")] + conv.messages, self.request_id)
         resp = self.generate("qwen2.5:32b-instruct-q4_K_M", query_conv, schema=Query)
         query = json.loads(resp.content)["user_query"]
         log.debug(f'req {self.request_id}: got query "{oneliner(query)}"')
