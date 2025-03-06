@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import random
 import string
@@ -30,7 +31,7 @@ async def text_input(req: web.Request) -> web.Response:
     core = Core(conv, lang, req_id)
 
     log.debug(f"req {req_id}: about to generate a reply")
-    reply = core.reply()
+    reply = await asyncio.to_thread(core.reply)
     log.debug(f'req {req_id}: got a reply "{oneliner(reply)}"')
 
     log.info(f"Request {req_id}: fulfilled, returning result")
