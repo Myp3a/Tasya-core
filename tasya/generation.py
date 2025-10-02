@@ -34,7 +34,7 @@ class Generator:
         if schema:
             log.debug(f"req {self.request_id}: will be generated according to schema")
         for msg in conv.messages:
-            log.debug(f"req {self.request_id}: msg by {msg.role:>9} - {oneliner(msg.content)}")
+            log.debug(f"req {self.request_id}: msg by {msg.role:>9} - {oneliner(msg)}")
         req_data = {
             "model": "gemma3-tasya",
             "messages": [m.model_dump(exclude_none=True) for m in conv.messages],
@@ -63,7 +63,7 @@ class Generator:
         to_summ = conv.messages[:conv.count - leave]
         summ_conv = Conversation.from_list([Message(role="system", content="You are a helpful assistant. Your task is to summarize the conversation between user and assistant. The conversation is provided below. Include as many specific details as you can. Speak in third person.")] + to_summ + [Message(role="user", content="What are we talking about?")], self.request_id)
         summ = self.generate(summ_conv)
-        log.debug(f'req {self.request_id}: summarized previous messages as "{oneliner(summ.content)}"')
+        log.debug(f'req {self.request_id}: summarized previous messages as "{oneliner(summ)}"')
         trunc_conv = Conversation.from_list([summ] + tail, self.request_id)
         return trunc_conv
 
@@ -121,5 +121,5 @@ A young beautiful witch. Has long black hair. Sharp-tongued and cynic. Loves to 
 You shall reply to the user while staying in character.""")] + conv.messages, self.request_id)
                 resp = self.generate(resp_conv)
         log.info(f"Request {self.request_id}: generated an answer")
-        log.debug(f'req {self.request_id}: answer is "{oneliner(resp.content)}')
+        log.debug(f'req {self.request_id}: answer is "{oneliner(resp)}')
         return resp

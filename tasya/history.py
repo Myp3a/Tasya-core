@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import logging
 import re
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -14,22 +16,26 @@ class ToolCall(BaseModel):
 
 class Message(BaseModel):
     role: Literal["assistant", "user", "system", "tool"]
-    content: str
+    content: str | list[dict[str, Any]]
     tool_calls: list[ToolCall] | None = None
 
     def wrap(self) -> str:
+        if isinstance(self.content, list):
+            content = next(e["text"] for e in self.content if e["type"] == "text")
+        else:
+            content = self.content
         match self.role:
             case "assistant":
-                return f"{config.token_assistant_start}{self.content.replace("\n", config.token_newline)}{config.token_assistant_end}"
+                return f"{config.token_assistant_start}{content.replace("\n", config.token_newline)}{config.token_assistant_end}"
             case "user":
-                return f"{config.token_user_start}{self.content.replace("\n", config.token_newline)}{config.token_user_end}"
+                return f"{config.token_user_start}{content.replace("\n", config.token_newline)}{config.token_user_end}"
             case "system":
-                return f"{config.token_system_start}{self.content.replace("\n", config.token_newline)}{config.token_system_end}"
+                return f"{config.token_system_start}{content.replace("\n", config.token_newline)}{config.token_system_end}"
             case "tool":
-                return f"{config.token_tool_start}{self.content.replace("\n", config.token_newline)}{config.token_tool_end}"
+                return f"{config.token_tool_start}{content.replace("\n", config.token_newline)}{config.token_tool_end}"
     
     @staticmethod
-    def unwrap(text: str) -> "Message":
+    def unwrap(text: str) -> Message:
         system = re.findall(rf"(?:^{config.token_system_start})(.*?)(?:{config.token_system_end}$)", text)
         assistant = re.findall(rf"(?:^{config.token_assistant_start})(.*?)(?:{config.token_assistant_end}$)", text)
         user = re.findall(rf"(?:^{config.token_user_start})(.*?)(?:{config.token_user_end}$)", text)
@@ -56,21 +62,31 @@ class Conversation:
         return "\n".join([m.wrap() for m in self.messages])
 
     @staticmethod
-    def from_marked_block(block: str, request_id: str = "unknwn") -> "Conversation":
+    def from_marked_block(block: str, request_id: str = "unknwn", init_conv: Conversation | None = None) -> Conversation:
         log.debug(f"req {request_id}: creating history from tagged solid text block")
         c = Conversation(request_id)
         c.messages = [Message.unwrap(m) for m in block.split("\n") if m]
+        if init_conv:
+            if init_conv.count != c.count:
+                raise RuntimeError("missing messages after translation")
+            for msg in init_conv.messages:
+                if isinstance(msg.content, list):
+                    ind = init_conv.messages.index(msg)
+                    c.messages[ind].content = [
+                        {"type": "text", "text": c.messages[ind].content},
+                        {"type": "image_url", "image_url": next(e["image_url"] for e in msg.content if e["type"] == "image_url")},
+                    ]
         return c
 
     @staticmethod
-    def from_dict(messages: list[dict[str, str]], request_id: str = "unknwn") -> "Conversation":
+    def from_dict(messages: list[dict[str, str]], request_id: str = "unknwn") -> Conversation:
         log.debug(f"req {request_id}: creating history from dictionary")
         c = Conversation(request_id)
         c.messages = [Message(role=m["role"], content=m["content"]) for m in messages]
         return c
     
     @staticmethod
-    def from_list(messages: list[Message], request_id: str = "unknwn") -> "Conversation":
+    def from_list(messages: list[Message], request_id: str = "unknwn") -> Conversation:
         log.debug(f"req {request_id}: creating history from list of messages")
         c = Conversation(request_id)
         c.messages = messages

@@ -3,9 +3,16 @@ from typing import Any, Callable
 
 from pydantic import BaseModel
 
+from tasya.history import Message
 
-def oneliner(text: str) -> str:
-    return text.replace('\n', " {br} ")
+def oneliner(msg: Message | str) -> str:
+    if isinstance(msg, str):
+        content = msg
+    elif isinstance(msg.content, list):
+        content = next(e["text"] for e in msg.content if e["type"] == "text")
+    else:
+        content = msg.content
+    return content.replace('\n', " {br} ")
 
 def function_to_tool(function: Callable, arguments_descr: list[str], required: list[str] | None = None) -> dict[str, Any]:
     type_mappings = {int: "integer", float: "number", str: "string"}
