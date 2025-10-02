@@ -8,7 +8,8 @@ class Config(BaseSettings):
     owm_token: str
     ymaps_token: str = "ad7c40a7-7096-43c9-b6e2-5e1f6d06b9ec"
 
-    ollama_ip: str = "127.0.0.1"
+    llamacpp_ip: str = "127.0.0.1"
+    llamacpp_port: int = 6669
 
     token_system_start: str = "<sss>"
     token_system_end: str = "</sss>"

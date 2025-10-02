@@ -37,7 +37,8 @@ async def text_input(req: web.Request) -> web.Response:
     log.info(f"Request {req_id}: fulfilled, returning result")
     return web.json_response({"role": "assistant", "content": reply})
 
-app = web.Application()
-app.add_routes(routes)
-log.info("Core init")
-web.run_app(app, port=8085)
+def main():
+    app = web.Application()
+    app.add_routes(routes)
+    log.info("Core init")
+    web.run_app(app, port=8085)
