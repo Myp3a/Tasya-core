@@ -58,7 +58,7 @@ class SystemMessage(Message, frozen=True):
 
 class UserMessage(Message, frozen=True):
     role: Literal["user"] = Field(default="user")
-    content: str | list[dict[str, str]]
+    content: str | list[dict[str, Any]]
 
     def wrap(self) -> str:
         if isinstance(self.content, str):
