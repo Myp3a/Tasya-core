@@ -1,15 +1,17 @@
 import inspect
+import json
 from typing import Any, Callable
 
 from pydantic import BaseModel
 
-from tasya.history import Message
+from tasya.history import AssistantToolCall, Message, UserMessage
 
-def oneliner(msg: Message | str) -> str:
-    if isinstance(msg, str):
-        content = msg
-    elif isinstance(msg.content, list):
+def oneliner(msg: Message) -> str:
+    if isinstance(msg, UserMessage) and isinstance(msg.content, list):
         content = next(e["text"] for e in msg.content if e["type"] == "text")
+    elif isinstance(msg, AssistantToolCall):
+        content = msg.tool_calls
+        return json.dumps([t.model_dump() for t in msg.tool_calls])
     else:
         content = msg.content
     return content.replace('\n', " {br} ")

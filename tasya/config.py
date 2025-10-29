@@ -17,8 +17,10 @@ class Config(BaseSettings):
     token_assistant_end: str = "</ass>"
     token_user_start: str = "<uss>"
     token_user_end: str = "</uss>"
-    token_tool_start: str = "<tll>"
-    token_tool_end: str = "</tll>"
+    token_tool_resp_start: str = "<tll>"
+    token_tool_resp_end: str = "</tll>"
+    token_tool_call_start: str = "<atl>"
+    token_tool_call_end: str = "</atl>"
     token_newline: str = "<nwln>"
 
 config = Config()

@@ -25,9 +25,17 @@ async def text_input(req: web.Request) -> web.Response:
         log.info(f"Request {req_id}: no data for generation, discarding")
         return web.json_response({"error": "history is empty"}, status=400)
     
+    for msg in history:
+        if isinstance(msg["content"], list):
+            types = [att["type"] for att in msg["content"]]
+            if types.count("text") > 1:
+                log.info(f"Request {req_id}: more than 1 text, discarding")
+                return web.json_response({"error": "only 1 text is allowed"}, status=400)
+
+    
     log.debug(f"req {req_id}: about to parse data")
-    conv = Conversation.from_dict(history, req_id)
-    log.debug(f"req {req_id}: parsed message history, got {conv.count} messages")
+    conv = Conversation.from_dicts(history, req_id)
+    log.debug(f"req {req_id}: parsed message history, got {len(conv.messages)} messages")
     core = Core(conv, lang, req_id)
 
     log.debug(f"req {req_id}: about to generate a reply")
@@ -35,7 +43,7 @@ async def text_input(req: web.Request) -> web.Response:
     log.debug(f'req {req_id}: got a reply "{oneliner(reply)}"')
 
     log.info(f"Request {req_id}: fulfilled, returning result")
-    return web.json_response({"role": "assistant", "content": reply})
+    return web.json_response({"role": "assistant", "content": reply.content})
 
 def main():
     app = web.Application()

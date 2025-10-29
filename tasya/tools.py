@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from typing import Any
 
@@ -28,7 +29,12 @@ class Tools:
         tools.append(function_to_tool(
             self.loc_by_str,
             ["Text representation of a location"],
-            ["query"],
+            ["location"],
+        ))
+        tools.append(function_to_tool(
+            self.time,
+            [],
+            [],
         ))
         return tools
 
@@ -56,11 +62,11 @@ class Tools:
         log.debug(f"req {self.request_id}: weather info is {res}")
         return res
 
-    def loc_by_str(self, query: str) -> tuple[float, float]:
+    def loc_by_str(self, location: str) -> tuple[float, float]:
         "Convert text representation of location to coordinates"
         log.info(f"Request {self.request_id}: converting location to coordinates")
-        log.debug(f'req {self.request_id}: location is "{query}"')
-        resp = requests.get("https://geocode-maps.yandex.ru/1.x/", params={"apikey": config.ymaps_token, "geocode": query, "format": "json"})
+        log.debug(f'req {self.request_id}: location is "{location}"')
+        resp = requests.get("https://geocode-maps.yandex.ru/1.x/", params={"apikey": config.ymaps_token, "geocode": location, "format": "json"})
         js = resp.json()
         log.debug(f"req {self.request_id}: yandex resp is {js}")
         addr = js["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
@@ -68,3 +74,9 @@ class Tools:
         lon = float(addr["Point"]["pos"].split(" ")[0])
         log.debug(f"req {self.request_id}: coordinates are {lat}, {lon}")
         return lat, lon
+    
+    def time(self) -> str:
+        "Get current date and time"
+        log.info(f"Request {self.request_id}: getting time")
+        t = datetime.now().isoformat()
+        return t
